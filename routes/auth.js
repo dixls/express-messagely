@@ -11,7 +11,7 @@ const router = new express.Router();
  * Make sure to update their last-login!
  *
  **/
-router.post("/login", async (res, req, next) => {
+router.post("/login", async (req, res, next) => {
     try {
         const { username, password } = req.body;
         if (await User.authenticate(username, password)) {
@@ -31,14 +31,16 @@ router.post("/login", async (res, req, next) => {
  *
  *  Make sure to update their last-login!
  */
-router.post("/register", async (req, req, next) => {
+router.post("/register", async (req, res, next) => {
     try {
         const user = await User.register(req.body);
         if (user) {
             const token = jwt.sign({ username: user.username }, SECRET_KEY);
-            return req.json({ token });
+            return res.json({ token });
         }
     } catch (e) {
         return next(e);
     }
 })
+
+module.exports = router;
