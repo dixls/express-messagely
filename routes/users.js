@@ -1,7 +1,7 @@
 const express = require("express");
 const User = require("../models/user");
-const Message = require("../models/message");
 const ExpressError = require("../expressError");
+const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
 
 const router = new express.Router();
 
@@ -10,7 +10,7 @@ const router = new express.Router();
  * => {users: [{username, first_name, last_name, phone}, ...]}
  *
  **/
-router.get("/", async (req, res, next) => {
+router.get("/", ensureLoggedIn, async (req, res, next) => {
     try {
         const results = await User.all();
         return res.json({ users: results })
@@ -24,7 +24,7 @@ router.get("/", async (req, res, next) => {
  * => {user: {username, first_name, last_name, phone, join_at, last_login_at}}
  *
  **/
-router.get("/:username", async (req, res, next) => {
+router.get("/:username", ensureCorrectUser, async (req, res, next) => {
     try {
         const results = await User.get(req.params.username);
         return res.json({ user: results })
@@ -42,10 +42,10 @@ router.get("/:username", async (req, res, next) => {
  *                 from_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
-router.get("/:username/to", async (req, res, next) => {
+router.get("/:username/to", ensureCorrectUser, async (req, res, next) => {
     try {
         const results = await User.messagesTo(req.params.username);
-        return res.json({messages: results});
+        return res.json({ messages: results });
     } catch (e) {
         return next(e);
     }
@@ -60,10 +60,10 @@ router.get("/:username/to", async (req, res, next) => {
  *                 to_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
- router.get("/:username/from", async (req, res, next) => {
+router.get("/:username/from", ensureCorrectUser, async (req, res, next) => {
     try {
         const results = await User.messagesFrom(req.params.username);
-        return res.json({messages: results});
+        return res.json({ messages: results });
     } catch (e) {
         return next(e);
     }
